@@ -43,7 +43,7 @@ My private and public subnets cannot have the same CIDR block (or overlapping IP
 
 By default, my private subnet is associated with the main (default) route table automatically created for NextWork VPC. Unless an explicit subnet association is made with a custom route table, any new subnet inherits this main route table's rules.
 
-I had to set up a new route table because our VPC's original route table (NextWork Public Route Table) has an active target route (0.0.0.0/0) pointing directly to an Internet Gateway. Associating the private subnet with that existing route table would make its resources publicly accessible; creating a dedicated route table guarantees that private subnet traffic is restricted strictly to local VPC targets (10.0.0.0/16).
+I had to set up a new route table because our VPC's original route table (NextWork Public Route Table) has an active target route (0.0.0.0/0) pointing directly to an Internet Gateway. Associating the private subnet with that existing route table would make its resources publicly accessible; creating a dedicated route table guarantees that private subnet traffic is restricted strictly to local VPC targets (10.0.0.0/16).  Because the main route table was our public route table, my private subnet was actually public from the moment I created it until I associated it with the new private route table.
 
 My private subnet's dedicated route table only has a local target route (10.0.0.0/16) that allows communication between resources located within the VPC. It does not include an outbound target route (0.0.0.0/0) to an Internet Gateway, ensuring that all incoming and outgoing internet traffic is blocked at the routing layer.
 
@@ -55,7 +55,7 @@ By default, my private subnet is associated with the VPC's main default Network 
 
 I set up a dedicated network ACL for my private subnet because having distinct, subnet-level stateless firewalls ensures independent access control for public vs. private environments. By explicitly isolating NextWork Private Subnet under its own Network ACL, I can configure strict custom packet-filtering rules to protect internal backend databases while keeping public subnet rules completely separate.
 
-My new network ACL has two simple rules—Rule 100 for Inbound traffic and Rule 100 for Outbound traffic—which explicitly allow all IPv4 traffic (0.0.0.0/0) across all ports and protocols. Any traffic that is not evaluated by Rule 100 falls through to the asterisk (*) catch-all rule, which denies all remaining traffic by default.
+By default, my new network ACL has only one rule for inbound traffic and one for outbound traffic: the asterisk (*) catch-all rule, which denies all traffic (0.0.0.0/0) across all ports and protocols. Unlike the VPC's default NACL, which allows everything, a custom NACL blocks all traffic until you add allow rules, so my private subnet is fully locked down at the subnet level.
 
 ![Image](https://nextwork.ai/overjoyed_magenta_proud_yak/uploads/4e96e29d-98b8-551e-ae93-da39c36e30fd_1ed2cb07)
 
